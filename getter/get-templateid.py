@@ -22,28 +22,25 @@ def get_auth_token(url, username, password):
     return response.json()['result']
 
 # テンプレートIDを取得する関数
-def get_template_id(url, username, password, template_name):
+def get_template_ids(url, username, password):
     auth_token = get_auth_token(url, username, password)
     headers = {'Content-Type': 'application/json-rpc'}
     data = {
         'jsonrpc': '2.0',
         'method': 'template.get',
         'params': {
-            'output': 'extend',
-            'filter': {
-                'host': [template_name]
-            }
+            'output': ['templateid', 'host']  # テンプレートIDとホスト名を取得するように修正
         },
         'auth': auth_token,
         'id': 1
     }
     response = requests.post(url, headers=headers, data=json.dumps(data))
     template_data = response.json()['result']
-    if template_data:
-        return template_data[0]['templateid']  # 最初に一致したテンプレートのtemplateidを返す
-    else:
-        return None
+    template_ids = {}
+    for template in template_data:
+        template_ids[template['host']] = template['templateid']
+    return template_ids
 
 # テンプレート名からテンプレートIDを取得
-template_id = get_template_id(url, username, password, 'Zabbix-Template-Linux')
-print("Template ID:", template_id)
+template_ids = get_template_ids(url, username, password)
+print("Template IDs:", template_ids)
