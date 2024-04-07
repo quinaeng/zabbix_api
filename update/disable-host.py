@@ -1,6 +1,5 @@
 import requests
 import json
-import sys
 
 # Zabbixサーバーの情報
 url = 'http://192.168.10.70/zabbix/api_jsonrpc.php'
@@ -26,29 +25,15 @@ def get_auth_token(url, username, password):
 
 auth_token = get_auth_token(url, username, password)
 
-# ホストの作成用のAPIリクエストを作成
-
-def create_host(url, auth_token):
-    args = sys.argv
-    hostname = args[1]
+# ホストのステータスを更新する関数
+def disable_host(url, auth_token, host_id):
     headers = {'Content-Type': 'application/json-rpc'}
     data = {
         'jsonrpc': '2.0',
-        'method': 'host.create',
+        'method': 'host.update',
         'params': {
-            'host': hostname,
-            'interfaces': [
-                {
-                    'type': 1,  # agent
-                    'main': 1,
-                    'useip': 1,
-                    'ip': '192.168.10.72',  # ホストのIPアドレス
-                    'dns': '',
-                    'port': '10050'  # エージェントのポート
-                }
-            ],
-            'groups': [{'groupid': '2'}],  # ホストが所属するグループのID
-            'templates': [{'templateid': '10441'}]  # 適用するテンプレートのID
+            'hostid': host_id,
+            'status': 1  # ステータスを無効にする
         },
         'auth': auth_token,
         'id': 1
@@ -60,4 +45,39 @@ def create_host(url, auth_token):
     # レスポンスの表示
     print(response.json())
 
-create_host(url, auth_token)
+# ホストIDを取得する関数
+def get_host_id(url, auth_token, hostname):
+    headers = {'Content-Type': 'application/json-rpc'}
+    data = {
+        'jsonrpc': '2.0',
+        'method': 'host.get',
+        'params': {
+            'filter': {
+                'host': [
+                    hostname
+                ]
+            },
+            'output': [
+                'hostid'
+            ]
+        },
+        'auth': auth_token,
+        'id': 1
+    }
+
+    # APIリクエストの送信
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    result = response.json()['result']
+
+    if result:
+        return result[0]['hostid']
+    else:
+        print("ホストが見つかりませんでした。")
+        return None
+
+# ホストを無効にする
+hostname = input("無効にしたいホスト名を入力してください: ")
+host_id = get_host_id(url, auth_token, hostname)
+if host_id:
+    disable_host(url, auth_token, host_id)
+
