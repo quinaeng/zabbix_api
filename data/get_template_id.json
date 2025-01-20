@@ -1,0 +1,13 @@
+{
+    "jsonrpc": "2.0",
+    "method": "template.get",
+    "params": {
+        "output": ["templateid", "name"],
+        "filter": {
+            "name": ["${templatename}"]
+        }
+    },
+    "auth": "${api_key}",
+    "id": 1
+}
+

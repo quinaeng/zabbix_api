@@ -1,0 +1,11 @@
+{
+    "jsonrpc": "2.0",
+    "method": "maintenance.get",
+    "params": {
+        "output": ["maintenanceid", "name"],
+        "selectHosts": ["hostid", "name"]
+    },
+    "auth": "${api_key}",
+    "id": 1
+}
+

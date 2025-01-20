@@ -1,0 +1,13 @@
+{
+    "jsonrpc": "2.0",
+    "method": "item.get",
+    "params": {
+        "output": ["itemid", "name", "key_"],
+        "templateids": "${templateid}",
+        "sortfield": "name",
+        "sortorder": "ASC"
+    },
+    "auth": "${api_key}",
+    "id": 1
+}
+

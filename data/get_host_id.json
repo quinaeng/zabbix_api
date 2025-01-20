@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "method": "host.get",
+  "params": {
+    "output": ["name", "hostid"],
+    "filter": {
+      "host": ["${hostname}"]
+    }
+  },
+  "id": 2,
+  "auth": "${api_key}"
+}
+
