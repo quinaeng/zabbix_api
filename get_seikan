@@ -1,0 +1,107 @@
+#!/bin/bash
+
+args=("${@}")
+
+# ヘルプ
+show_help(){
+    echo "Usage: $(basename ${0}) [options].."
+    echo ''
+    echo 'Options'
+    echo '    -m    test1を指定する'
+    echo '    -s    test2を指定する'
+    echo '    -d    test3を指定する'
+    echo ''
+}
+
+exec_command() {
+    local url="${1}"
+    local username="${2}"
+    local password="${3}"
+    local host="${4}"
+
+    secret=$(cat <<EOF
+    {
+        "jsonrpc": "2.0",
+        "method": "user.login",
+        "params": {
+            "username": "${username}",
+            "password": "${password}"
+        },
+        "id": 1
+    }
+EOF
+    )
+
+    api_key=$(curl -s -X POST -H "Content-Type: application/json" -d "${secret}" "${url}" | jq -r '.result')
+
+    if [[ "${api_key}" == "null" || -z "${api_key}" ]]; then
+        echo "Error: APIキーの取得に失敗しました"
+        exit 1
+    fi
+
+    # echo "API Key: ${api_key}"
+    get_maintenance=$(cat <<EOF
+    {
+        "jsonrpc": "2.0",
+        "method": "maintenance.get",
+        "params": {
+            "output": ["maintenanceid", "name"],
+            "selectHosts": ["hostid", "name"]
+        },
+        "auth": "${api_key}",
+        "id": 1
+    }
+EOF
+    )
+
+    result=$(curl -s -X POST -H "Content-Type: application/json" -d "${get_maintenance}" "${url}")
+    echo "${host}"
+    echo 'メンテナンス,対象ホスト'
+    echo '------------------------------'
+    echo "${result}" | jq -r '
+    .result[] | 
+    [
+        .name,
+        (.hosts[]?.name | select(. != null))
+    ] | @csv'
+    echo '------------------------------'
+}
+
+# オプション無しの処理
+if [ $# -eq 0 ]; then
+  show_help
+  exit 1
+fi
+
+# オプションごとの処理
+for arg in "${args[@]}"; do
+
+    case "${arg}" in
+        '-m')
+            hostname='test1'
+            zabbix_url='http://192.168.10.20/zabbix/api_jsonrpc.php'
+            zabbix_user='Admin'
+            zabbix_password='zabbix'
+            exec_command "${zabbix_url}" "${zabbix_user}" "${zabbix_password}" "${hostname}"
+            ;;
+        '-s')
+            hostname='test2'
+            zabbix_url='http://192.168.10.20/zabbix/api_jsonrpc.php'
+            zabbix_user='Admin'
+            zabbix_password='zabbix'
+            exec_command "${zabbix_url}" "${zabbix_user}" "${zabbix_password}" "${hostname}"
+            ;;
+        '-d')
+            hostname='test3'
+            zabbix_url='http://192.168.10.20/zabbix/api_jsonrpc.php'
+            zabbix_user='Admin'
+            zabbix_password='zabbix'
+            exec_command "${zabbix_url}" "${zabbix_user}" "${zabbix_password}" "${hostname}"
+            ;;
+        *)
+            show_help
+            exit 1
+            ;;
+    esac
+done
+

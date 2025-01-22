@@ -1,0 +1,200 @@
+Script started on 2025-01-23 03:30:27+09:00 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="125" LINES="24"]
+[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mcat get_seikan
+[?2004l#!/bin/bash
+
+args=("${@}")
+
+# ヘルプ
+show_help(){
+    echo "Usage: $(basename ${0}) [options].."
+    echo ''
+    echo 'Options'
+    echo '    -m    test1を指定する'
+    echo '    -s    test2を指定する'
+    echo '    -d    test3を指定する'
+    echo ''
+}
+
+exec_command() {
+    local url="${1}"
+    local username="${2}"
+    local password="${3}"
+    local host="${4}"
+
+    secret=$(cat <<EOF
+    {
+        "jsonrpc": "2.0",
+        "method": "user.login",
+        "params": {
+            "username": "${username}",
+            "password": "${password}"
+        },
+        "id": 1
+    }
+EOF
+    )
+
+    api_key=$(curl -s -X POST -H "Content-Type: application/json" -d "${secret}" "${url}" | jq -r '.result')
+
+    if [[ "${api_key}" == "null" || -z "${api_key}" ]]; then
+        echo "Error: APIキーの取得に失敗しました"
+        exit 1
+    fi
+
+    # echo "API Key: ${api_key}"
+    get_maintenance=$(cat <<EOF
+    {
+        "jsonrpc": "2.0",
+        "method": "maintenance.get",
+        "params": {
+            "output": ["maintenanceid", "name"],
+            "selectHosts": ["hostid", "name"]
+        },
+        "auth": "${api_key}",
+        "id": 1
+    }
+EOF
+    )
+
+    result=$(curl -s -X POST -H "Content-Type: application/json" -d "${get_maintenance}" "${url}")
+    echo "${host}"
+    echo 'メンテナンス,対象ホスト'
+    echo '------------------------------'
+    echo "${result}" | jq -r '
+    .result[] | 
+    [
+        .name,
+        (.hosts[]?.name | select(. != null))
+    ] | @csv'
+    echo '------------------------------'
+}
+
+# オプション無しの処理
+if [ $# -eq 0 ]; then
+  show_help
+  exit 1
+fi
+
+# オプションごとの処理
+for arg in "${args[@]}"; do
+
+    case "${arg}" in
+        '-m')
+            hostname='test1'
+            zabbix_url='http://192.168.10.20/zabbix/api_jsonrpc.php'
+            zabbix_user='Admin'
+            zabbix_password='zabbix'
+            exec_command "${zabbix_url}" "${zabbix_user}" "${zabbix_password}" "${hostname}"
+            ;;
+        '-s')
+            hostname='test2'
+            zabbix_url='http://192.168.10.20/zabbix/api_jsonrpc.php'
+            zabbix_user='Admin'
+            zabbix_password='zabbix'
+            exec_command "${zabbix_url}" "${zabbix_user}" "${zabbix_password}" "${hostname}"
+            ;;
+        '-d')
+            hostname='test3'
+            zabbix_url='http://192.168.10.20/zabbix/api_jsonrpc.php'
+            zabbix_user='Admin'
+            zabbix_password='zabbix'
+            exec_command "${zabbix_url}" "${zabbix_user}" "${zabbix_password}" "${hostname}"
+            ;;
+        *)
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mgets[K_seik^C[?2004l[?2004h[?2004l
+[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mbash get_seikan -m
+[?2004ltest1
+メンテナンス,対象ホスト
+------------------------------
+"testmaint_aaa","Zabbix server","aaa"
+------------------------------
+[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mget[K[K[K
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mbash get_seikan -s
+[?2004ltest2
+メンテナンス,対象ホスト
+------------------------------
+"testmaint_aaa","Zabbix server","aaa"
+------------------------------
+[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mbash get_seikan -d
+[?2004ltest3
+メンテナンス,対象ホスト
+------------------------------
+"testmaint_aaa","Zabbix server","aaa"
+------------------------------
+[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mbash get_seikan -m -s
+[?2004ltest1
+メンテナンス,対象ホスト
+------------------------------
+"testmaint_aaa","Zabbix server","aaa"
+------------------------------
+test2
+メンテナンス,対象ホスト
+------------------------------
+"testmaint_aaa","Zabbix server","aaa"
+------------------------------
+[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mbash get_seikan -a
+[?2004lUsage: get_seikan [options]..
+
+Options
+    -m    test1を指定する
+    -s    test2を指定する
+    -d    test3を指定する
+
+[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mbash get_seikan
+[?2004lUsage: get_seikan [options]..
+
+Options
+    -m    test1を指定する
+    -s    test2を指定する
+    -d    test3を指定する
+
+[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0m
+[?2004l[?2004h[0;31m┌─[[0;31m✗[0;31m]─[[0;39mkamizato[01;33m@[01;96mparrot[0;31m]─[[0;32m~/git/zabbix_api[0;31m]
+[0;31m└──╼ [0m[01;33m$[0mexit
+[?2004lexit
+
+Script done on 2025-01-23 03:31:29+09:00 [COMMAND_EXIT_CODE="1"]
